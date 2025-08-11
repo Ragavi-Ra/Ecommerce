@@ -1,28 +1,28 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+// App.tsx
+import React, { useEffect } from 'react';
+import { CartProvider } from './src/store/CartContext.tsx';
+import AppNavigator from './AppNavigator.tsx';
+import { requestLocationPermission } from './src/services/LocationPermission.ts';
+import { requestNotificationPermission } from './src/services/NotificationPermission';
 
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
+export default function App() {
+  useEffect(() => {
+    (async () => {
+      const locationGranted = await requestLocationPermission();
+      if (!locationGranted) {
+        console.warn('Location permission not granted');
+      }
 
-function App() {
-  const isDarkMode = useColorScheme() === 'dark';
+      const notificationGranted = await requestNotificationPermission();
+      if (!notificationGranted) {
+        console.warn('Notification permission not granted');
+      }
+    })();
+  }, []);
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <NewAppScreen templateFileName="App.tsx" />
-    </View>
+    <CartProvider>
+      <AppNavigator />
+    </CartProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
-
-export default App;
