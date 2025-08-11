@@ -1,7 +1,6 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Image } from 'react-native';
 
 import ProductListScreen from './src/screens/ProductListScreen';
 import CartScreen from './src/screens/CartScreen';
@@ -21,19 +20,7 @@ const AppNavigator = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="ProductList">
-        <Stack.Screen
-          name="ProductList"
-          component={ProductListScreen}
-          options={{
-            headerTitle: () => (
-              <Image
-                source={{ uri: 'http://kambaaincorporation.com/images/kambaa-logo.webp' }}
-                style={{ width: 120, height: 40, resizeMode: 'contain' }}
-              />
-            ),
-            headerTitleAlign: 'center',
-          }}
-        />
+        <Stack.Screen name="ProductList" component={ProductListScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Cart" component={CartScreen} options={{ title: 'Your Cart' }} />
         <Stack.Screen name="Subscription" component={SubscriptionScreen} options={{ title: 'Subscription' }} />
         <Stack.Screen name="MapPicker" component={MapPickerScreen} options={{ title: 'Pick Location' }} />

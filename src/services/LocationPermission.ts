@@ -18,14 +18,14 @@ export async function requestLocationPermission() {
 
     switch (result) {
       case RESULTS.GRANTED:
-        console.log('Location permission granted');
+        //Location permission granted
         return true;
       case RESULTS.BLOCKED:
-        console.log('Permission blocked, opening settings');
+        //Permission blocked, opening settings
         openSettings();
         return false;
       default:
-        console.log('Permission denied');
+        //Permission denied
         return false;
     }
   } catch (err) {

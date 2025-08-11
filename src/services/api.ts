@@ -9,7 +9,6 @@ export const fetchProducts = async () => {
 
   const cachedProducts = await getProducts(db);
   if (cachedProducts.length > 0) {
-    console.log('Loaded products from SQLite');
   }
 
   try {
@@ -17,11 +16,11 @@ export const fetchProducts = async () => {
     const products = response.data.products;
 
     await saveProducts(db, products);
-    console.log('Data fetched from API and cached locally');
+    //Data fetched from API and cached locally
 
     return products.length > 0 ? products : cachedProducts;
   } catch (error) {
-    console.log('API fetch failed, using cached data');
+    //API fetch failed using cached data
     return cachedProducts;
   }
 };

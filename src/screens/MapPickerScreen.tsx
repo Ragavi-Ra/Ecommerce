@@ -1,126 +1,86 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, StyleSheet, Button, Alert } from 'react-native';
-import MapView, { Marker, Region, MapPressEvent } from 'react-native-maps';
+import React, { useState, useEffect, useCallback } from "react";
+import { View, StyleSheet, Button, Alert } from "react-native";
+import MapLibreGL from "@maplibre/maplibre-react-native";
 import Geolocation from '@react-native-community/geolocation';
 import { requestLocationPermission } from '../services/LocationPermission';
 
-type MapPickerScreenProps = {
-  navigation: any;
-  route: {
-    params?: {
-      onLocationSelect: (location: { latitude: number; longitude: number }) => void;
+const OSM_RASTER_STYLE = {
+    version: 8,
+    sources: {
+        osm: {
+            type: "raster",
+            tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+            tileSize: 256,
+            attribution: "© OpenStreetMap contributors"
+        }
+    },
+    layers: [{ id: "osm", type: "raster", source: "osm" }]
+};
+
+export default function MapPickerScreen({ navigation, route }: any) {
+    const [location, setLocation] = useState<[number, number]>([77.5946, 12.9716]);
+    const [marker, setMarker] = useState<[number, number] | null>(null);
+
+    const setCurrentLocation = useCallback(async () => {
+        const granted = await requestLocationPermission();
+        if (!granted) return Alert.alert("Permission denied", "Location access is needed to select your location.");
+
+        Geolocation.getCurrentPosition(
+            pos => {
+                const coords: [number, number] = [pos.coords.longitude, pos.coords.latitude];
+                setLocation(coords);
+                setMarker(coords);
+            },
+            err => Alert.alert("Error", "Unable to get location: " + err.message),
+            { enableHighAccuracy: true }
+        );
+    }, []);
+
+    useEffect(() => { setCurrentLocation(); }, [setCurrentLocation]);
+
+    const onMapPress = (e: any) => {
+        const coords: [number, number] = e.geometry.coordinates;
+        setMarker(coords);
     };
-  };
-};
 
-export default function MapPickerScreen({ navigation, route }: MapPickerScreenProps) {
-  const initialLatitude = 11.023868721033416;
-  const initialLongitude = 77.00440862883563;
+    const confirm = () => {
+        if (!marker) return Alert.alert("Select a location first");
 
-  const [region, setRegion] = useState<Region>({
-    latitude: initialLatitude,
-    longitude: initialLongitude,
-    latitudeDelta: 0.01,
-    longitudeDelta: 0.01,
-  });
+        const selectedLat = marker[1];
+        const selectedLng = marker[0];
 
-  const [markerPosition, setMarkerPosition] = useState({
-    latitude: initialLatitude,
-    longitude: initialLongitude,
-  });
+        Alert.alert(
+            "Location Selected",
+            `Latitude: ${selectedLat.toFixed(6)}\nLongitude: ${selectedLng.toFixed(6)}`
+        );
 
-  const getCurrentLocation = useCallback(() => {
-    Geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude, longitude } = pos.coords;
-        const newRegion = {
-          latitude,
-          longitude,
-          latitudeDelta: 0.01,
-          longitudeDelta: 0.01,
-        };
-        setRegion(newRegion);
-        setMarkerPosition({ latitude, longitude });
-      },
-      () => Alert.alert('Error', 'Could not get current location'),
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+        route.params?.onLocationSelect({ latitude: selectedLat, longitude: selectedLng });
+        navigation.goBack();
+    };
+
+    return (
+        <View style={styles.container}>
+            <MapLibreGL.MapView style={styles.map} mapStyle={OSM_RASTER_STYLE} onPress={onMapPress}>
+                <MapLibreGL.Camera zoomLevel={14} centerCoordinate={marker || location} />
+                {marker && <MapLibreGL.PointAnnotation id="picked" coordinate={marker}><View style={styles.marker} /></MapLibreGL.PointAnnotation>}
+            </MapLibreGL.MapView>
+            <View style={styles.buttons}>
+                <Button title="Use My Location" onPress={setCurrentLocation} />
+                <Button title="Confirm" onPress={confirm} />
+            </View>
+        </View>
     );
-  }, []);
-
-  useEffect(() => {
-    (async () => {
-      const granted = await requestLocationPermission();
-      if (granted) {
-        getCurrentLocation();
-      } else {
-        Alert.alert('Permission Denied', 'Location permission is needed to pick location');
-      }
-    })();
-  }, [getCurrentLocation]);
-
-//   const onConfirm = () => {
-//     route.params?.onLocationSelect?.(markerPosition);
-//     navigation.goBack();
-//   };
-const onConfirm = () => {
-  const { latitude, longitude } = markerPosition;
-  Alert.alert(
-    'Selected Location',
-    `Latitude: ${latitude.toFixed(6)}\nLongitude: ${longitude.toFixed(6)}`,
-    [
-      {
-        text: 'OK',
-        onPress: () => {
-          route.params?.onLocationSelect?.(markerPosition);
-          navigation.goBack();
-        },
-      },
-    ]
-  );
-};
-
-  const handleMapPress = (event: MapPressEvent) => {
-    const { latitude, longitude } = event.nativeEvent.coordinate;
-    setMarkerPosition({ latitude, longitude });
-    setRegion((prev) => ({
-      ...prev,
-      latitude,
-      longitude,
-    }));
-  };
-
-  return (
-    <View style={styles.container}>
-      <MapView
-        style={styles.map}
-        region={region}
-        onRegionChangeComplete={(r) => setRegion(r)}
-        onPress={handleMapPress}
-      >
-        <Marker
-          coordinate={markerPosition}
-          draggable
-          onDragEnd={(e) => setMarkerPosition(e.nativeEvent.coordinate)}
-        />
-      </MapView>
-      <View style={styles.buttonContainer}>
-        <Button title="Confirm Location" onPress={onConfirm} />
-      </View>
-    </View>
-  );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  map: { flex: 1 },
-  buttonContainer: {
-    position: 'absolute',
-    bottom: 20,
-    left: 20,
-    right: 20,
-    backgroundColor: 'white',
-    borderRadius: 8,
-    padding: 10,
-    elevation: 2,
-  },
+    container: { flex: 1 },
+    map: { flex: 1 },
+    marker: {
+        height: 20, width: 20, borderRadius: 10,
+        backgroundColor: "red", borderColor: "#fff", borderWidth: 2,
+    },
+    buttons: {
+        position: "absolute", bottom: 20, left: 20, right: 20,
+        flexDirection: "row", justifyContent: "space-between"
+    }
 });

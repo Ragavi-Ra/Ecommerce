@@ -13,11 +13,11 @@ Developed a **Product List Page** in React Native with lazy loading, offline sup
 - **Add to Cart Notification:** Triggered push notifications on product add-to-cart using Notifee. I chose Notifee because, after reading documentation, I found that FCM alone doesn’t support foreground notifications well. I considered OneSignal but due to time constraints and needing to verify its documentation, I opted for Notifee, which I was already familiar with and could integrate quickly.
 - **Subscription Module:** Allowed selection among Weekend, Weekdays, or Random day subscriptions with appropriate calendar views.
 - **Price Calculation:** Applied discounts automatically based on subscription days and cart discounts.
-- **Map Picker:** Embedded Google Maps for location picking after subscription selection.
+- **Map Picker:** Initially planned to use Google Maps for location picking after subscription selection, but Google Maps requires a billing account for API usage even though it worked temporarily without one. To avoid this limitation and ongoing costs, I switched to the free, open-source MapLibreGL library, which renders OpenStreetMap tiles without needing an API key. This allowed live user location tracking and interactive location picking (drag and drop) without any billing or API restrictions.
 
 ---
 
-## Timeline & Depth (2 Days)
+## Timeline & Depth
 
 | Task                         | Estimated Time | Notes                                          |
 |------------------------------|----------------|------------------------------------------------|
@@ -26,6 +26,7 @@ Developed a **Product List Page** in React Native with lazy loading, offline sup
 | Cart Notification Setup      |     3 hrs      | Integrated push notification trigger           |
 | Subscription & Price Logic   |     6 hrs      | Calendar UI with discount calculation          |
 | Map Picker Integration       |     3 hrs      | Simple embedded map for location selection     |
+| Error and fixes              |     6 hrs      | Worked on the errors during build generation   |
 
 ---
 

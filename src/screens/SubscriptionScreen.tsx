@@ -25,7 +25,6 @@ export default function SubscriptionScreen({ navigation }: any) {
     const onGoToMapPicker = () => {
         navigation.navigate('MapPicker', {
             onLocationSelect: (location: { latitude: number; longitude: number }) => {
-                console.log('Picked location:', location);
                 setUserLocation(location);
             },
         });
